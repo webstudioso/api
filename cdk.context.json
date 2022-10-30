@@ -2,5 +2,9 @@
   "hosted-zone:account=462146859786:domainName=dev.dappify.com:region=us-east-1": {
     "Id": "/hostedzone/Z03176391IVYE16VT8I22",
     "Name": "dev.dappify.com."
+  },
+  "hosted-zone:account=222929951546:domainName=dappify.com:region=us-east-1": {
+    "Id": "/hostedzone/Z010252630DWXW592S2CZ",
+    "Name": "dappify.com."
   }
 }
