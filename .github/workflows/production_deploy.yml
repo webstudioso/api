@@ -24,7 +24,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-dappify-api
       - name: Install dependencies
-        run: npm i
+        run: npm i; cd resources; npm i
       - name: cdk deploy
         uses: youyo/aws-cdk-github-actions@v2
         with:
