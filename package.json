@@ -9,8 +9,14 @@
     "cdk": "cdk",
     "test": "jest"
   },
+  "husky": {
+    "hooks": {
+      "pre-commit": "cdk bootstrap"
+    }
+  },
   "devDependencies": {
-    "aws-cdk": "2.49.0",
+    "aws-cdk": "^2.49.0",
+    "husky": "^8.0.1",
     "jest": "^27.5.1"
   },
   "dependencies": {

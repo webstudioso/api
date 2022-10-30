@@ -3,3 +3,5 @@ node_modules
 # CDK asset staging directory
 .cdk.staging
 cdk.out
+node_modules
+resources/node_modules
