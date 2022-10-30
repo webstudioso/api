@@ -38,4 +38,4 @@ jobs:
           ACM_ARN: ${{ secrets.ACM_ARN }}
           AWS_ACCOUNT: ${{ secrets.AWS_ACCOUNT }}
           AWS_REGION: ${{ secrets.AWS_REGION }}
-          ROOT_DOMAIN: ${{ secrets.ROOT_DOMAIN }}
+          ROOT_DOMAIN: dappify.com
