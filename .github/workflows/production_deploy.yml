@@ -2,7 +2,7 @@ name: Dappify API Deploy Production
 on:
   push:
     branches:
-      - master
+      - main
 jobs:
   build:
     runs-on: ubuntu-latest
