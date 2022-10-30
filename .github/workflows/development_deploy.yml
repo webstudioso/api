@@ -36,7 +36,7 @@ jobs:
           ACM_ARN: ${{ secrets.ACM_ARN_DEV }}
           AWS_ACCOUNT: ${{ secrets.AWS_ACCOUNT_DEV }}
           AWS_REGION: ${{ secrets.AWS_REGION }}
-          ROOT_DOMAIN: ${{ secrets.ROOT_DOMAIN_DEV }}
+          ROOT_DOMAIN: dev.dappify.com
       - name: cdk deploy
         uses: youyo/aws-cdk-github-actions@v2
         with:
@@ -50,4 +50,4 @@ jobs:
           ACM_ARN: ${{ secrets.ACM_ARN_DEV }}
           AWS_ACCOUNT: ${{ secrets.AWS_ACCOUNT_DEV }}
           AWS_REGION: ${{ secrets.AWS_REGION }}
-          ROOT_DOMAIN: ${{ secrets.ROOT_DOMAIN_DEV }}
+          ROOT_DOMAIN: dev.dappify.com
