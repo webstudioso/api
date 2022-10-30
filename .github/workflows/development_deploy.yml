@@ -25,6 +25,18 @@ jobs:
             ${{ runner.os }}-dappify-api
       - name: Install dependencies
         run: npm i
+      - name: cdk bootstrap
+        uses: youyo/aws-cdk-github-actions@v2
+        with:
+          cdk_subcommand: 'bootstrap'
+          actions_comment: false
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID_DEV }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY_DEV }}
+          ACM_ARN: ${{ secrets.ACM_ARN_DEV }}
+          AWS_ACCOUNT: ${{ secrets.AWS_ACCOUNT_DEV }}
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+          ROOT_DOMAIN: ${{ secrets.ROOT_DOMAIN_DEV }}
       - name: cdk deploy
         uses: youyo/aws-cdk-github-actions@v2
         with:
