@@ -114,16 +114,18 @@ exports.main = async function(event, context) {
     }
 //   console.log('DOS');
 //   // const tokenURI = await contract.tokenURI(tokenId);
-  const name = await contract.name();
-  const symbol = await contract.symbol();
-  const metadata = await axios.get(tokenUri);
+  const nameQuery = contract.name();
+  const symbolQuery = contract.symbol();
+  const metadataQuery = axios.get(tokenUri);
+
+  const queries = await Promise.all([nameQuery, symbolQuery, metadataQuery]);
   const nft = {
     token_id: tokenId,
     token_uri: tokenUri,
-    name,
-    symbol,
+    name: queries[0],
+    symbol: queries[1],
     token_address: address,
-    metadata: metadata?.data,
+    metadata: queries[2]?.data,
     type: isERC721 ? 'ERC721' : 'ERC1155'
   }
 
