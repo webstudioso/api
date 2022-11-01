@@ -103,14 +103,16 @@ exports.main = async function(event, context) {
     const IERC1155 = '0xd9b67a26';
     const isERC721 = await contract.supportsInterface(IERC721);
     // const isERC1155 = await contract.supportsInterface(IERC1155);
-    let tokenUri;
+    let tokenUri, ownerQuery;
     // if (isERC1155) {
     //   tokenUri = await contract.uri(tokenId);
     if (isERC721) {
       tokenUri = await contract.tokenURI(tokenId);
+      ownerQuery = contract.ownerOf(tokenId);
     } else {
       // Not supported
       tokenUri = await contract.uri(tokenId);
+      ownerQuery = contract.owner();
     }
 //   console.log('DOS');
 //   // const tokenURI = await contract.tokenURI(tokenId);
@@ -118,7 +120,7 @@ exports.main = async function(event, context) {
   const symbolQuery = contract.symbol();
   const metadataQuery = axios.get(tokenUri);
 
-  const queries = await Promise.all([nameQuery, symbolQuery, metadataQuery]);
+  const queries = await Promise.all([nameQuery, symbolQuery, metadataQuery, ownerQuery]);
   const nft = {
     token_id: tokenId,
     token_uri: tokenUri,
@@ -126,6 +128,7 @@ exports.main = async function(event, context) {
     symbol: queries[1],
     token_address: address,
     metadata: queries[2]?.data,
+    owner: queries[3],
     type: isERC721 ? 'ERC721' : 'ERC1155'
   }
 
