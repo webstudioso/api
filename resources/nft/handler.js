@@ -12,9 +12,10 @@ const AWS = require('aws-sdk');
 const ethers = require('ethers');
 const axios = require('axios');
 
-const ERC165ABI = require('./abi/ERC165.json');
-const ERC721ABI = require('./abi/ERC721.json');
-const ERC1155ABI = require('./abi/ERC1155.json');
+const ERC165ABI = require('../abi/ERC165.json');
+const ERC721ABI = require('../abi/ERC721.json');
+const ERC1155ABI = require('../abi/ERC1155.json');
+const chainMapping = require('../mapping/chains.json');
 
 const S3 = new AWS.S3();
 
@@ -23,13 +24,12 @@ const bucketName = process.env.BUCKET;
 
 
 
-const url = 'https://eth-rpc-mandala.aca-staging.network/';
-let customHttpProvider = new ethers.providers.JsonRpcProvider(url);
-let privateKey = '0x3ab6468f2465130c51946a5456b8e2d309be7af2f8afcd6823996d281c0990d0';
-
+// const url = 'https://eth-rpc-mandala.aca-staging.network/';
+let singatureHash = '0x3ab6468f2465130c51946a5456b8e2d309be7af2f8afcd6823996d281c0990d0';
 
 exports.main = async function(event, context) {
   try {
+    console.log(JSON.stringify(event));
     // var method = event.httpMethod;
     let contract;
 
@@ -49,8 +49,14 @@ exports.main = async function(event, context) {
 
     const address = event['pathParameters']['address'];
     const tokenId = event['pathParameters']['token_id'];
+    const queryParams = event["queryStringParameters"] || {};
+    const wallet = queryParams['owner_of'];
+    const chain = queryParams['chain'];
 
-    const signer = new ethers.Wallet(privateKey, customHttpProvider);
+    const targetChainUrl = chainMapping[chain] || chainMapping["1"];
+    let customHttpProvider = new ethers.providers.JsonRpcProvider(targetChainUrl);
+  
+    const signer = new ethers.Wallet(singatureHash, customHttpProvider);
     contract = new ethers.Contract(address, ERC165ABI, signer);
 
     const IERC721 = '0x80ac58cd';
@@ -69,8 +75,8 @@ exports.main = async function(event, context) {
       // Not supported
       contract = new ethers.Contract(address, ERC1155ABI, signer);
       tokenUri = await contract.uri(tokenId);
-      ownerQuery = contract.owner();
-      amountQuery = contract.balanceOf(address, tokenId);
+      ownerQuery = new Promise((resolve) => resolve(wallet));
+      amountQuery = contract.balanceOf(wallet, tokenId);
     }
 //   console.log('DOS');
 //   // const tokenURI = await contract.tokenURI(tokenId);
@@ -87,8 +93,9 @@ exports.main = async function(event, context) {
     token_address: address,
     metadata: queries[2]?.data,
     owner_of: queries[3],
-    amount: queries[4],
-    contract_type: isERC721 ? 'ERC721' : 'ERC1155'
+    amount: parseInt(queries[4]),
+    contract_type: isERC721 ? 'ERC721' : 'ERC1155',
+    chain
   }
 
 
