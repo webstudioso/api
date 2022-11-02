@@ -105,7 +105,11 @@ console.log('TRES');
     // We only accept GET for now
     return {
       statusCode: 200,
-      headers: {},
+      headers: {
+        "Access-Control-Allow-Headers" : "Content-Type",
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "OPTIONS,POST,GET"
+      },
       body: JSON.stringify(nft)
     };
   } catch(error) {

@@ -18,9 +18,15 @@ const chainMapping = require('../mapping/chains.json');
 exports.main = async function(event, context) {
   try {
     console.log(JSON.stringify(event));
+    const chainsUrl = 'https://chainid.network/chains.json';
+    const chainsTlv = 'https://api.llama.fi/chains';
     // var method = event.httpMethod;
 
-
+    const urlQuery = axios.get(chainsUrl);
+    const tlvQuery = axios.get(chainsTlv);
+    const queries = await Promise.all([urlQuery, tlvQuery]);
+    let networks = queries[0].data;
+    const tlvs = queries[1].data;
     // if (method === "GET") {
     //   if (event.path === "/") {
     //     const data = await S3.listObjectsV2({ Bucket: bucketName }).promise();
@@ -35,24 +41,37 @@ exports.main = async function(event, context) {
     //   }
     // }
 
-    const address = event['pathParameters']['address'];
+    // const address = event['pathParameters']['address'];
 
     const queryParams = event["queryStringParameters"] || {}
-    const chain = queryParams['chain'] || '1';
+    const typeQuery = queryParams['type'];
     // const chain = event?.queryStringParameters['chain'];
-    const targetChainUrl = chainMapping[chain];
-    const options = {
-        "jsonrpc": "2.0",
-        "method": "eth_getBalance",
-        "params": [address, "latest"],
-        "id": 1
-    }
-    const response = await axios.post(targetChainUrl, options);
-    const value = response?.data?.result;
-    const balance = {
-        balance: parseInt(value)
+
+    // Need filter?
+    if (typeQuery) {
+        networks = networks.filter((network) => {
+            if (typeQuery === 'testnet') {
+                return  network?.name?.toLowerCase().includes('test') || 
+                        network?.title?.toLowerCase().includes('test') || 
+                        network?.network?.toLowerCase().includes('test')
+            } else if (typeQuery === 'mainnet') {
+                return  !network?.name?.toLowerCase().includes('test') &&
+                        !network?.title?.toLowerCase().includes('test') && 
+                        !network?.network?.toLowerCase().includes('test')
+            }
+        })
     }
 
+    networks = networks.map((network) => {
+        let name;
+        if (network.title) {
+            name = network.title.split(' ')[0].toLowerCase();
+        } else {
+            name = network.name.split(' ')[0].toLowerCase();
+        }
+        network.imageUrl = `https://defillama.com/_next/image?url=%2Fchain-icons%2Frsz_${name}.jpg&w=48&q=75`;
+        return network;
+    })
     // We only accept GET for now
     return {
       statusCode: 200,
@@ -61,7 +80,7 @@ exports.main = async function(event, context) {
         "Access-Control-Allow-Origin": "*",
         "Access-Control-Allow-Methods": "OPTIONS,POST,GET"
       },
-      body: JSON.stringify(balance)
+      body: JSON.stringify(networks)
     };
   } catch(error) {
     var body = error.stack || JSON.stringify(error, null, 2);
