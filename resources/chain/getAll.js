@@ -9,47 +9,23 @@ https://docs.aws.amazon.com/sdk-for-javascript/v2/developer-guide/calling-servic
 https://docs.aws.amazon.com/lambda/latest/dg/nodejs-prog-model-handler.html 
 */
 const AWS = require('aws-sdk');
-const ethers = require('ethers');
 const axios = require('axios');
 
-const chainMapping = require('../mapping/chains.json');
+// Data extracted from
+// https://chainid.network/chains.json
+// https://api.llama.fi/chains
+const chains = require('../data/chains.json');
 
 
 exports.main = async function(event, context) {
   try {
-    console.log(JSON.stringify(event));
-    const chainsUrl = 'https://chainid.network/chains.json';
-    const chainsTlv = 'https://api.llama.fi/chains';
-    // var method = event.httpMethod;
-
-    const urlQuery = axios.get(chainsUrl);
-    const tlvQuery = axios.get(chainsTlv);
-    const queries = await Promise.all([urlQuery, tlvQuery]);
-    let networks = queries[0].data;
-    const tlvs = queries[1].data;
-    // if (method === "GET") {
-    //   if (event.path === "/") {
-    //     const data = await S3.listObjectsV2({ Bucket: bucketName }).promise();
-    //     var body = {
-    //       widgets: data.Contents.map(function(e) { return e.Key })
-    //     };
-    //     return {
-    //       statusCode: 200,
-    //       headers: {},
-    //       body: JSON.stringify(body)
-    //     };
-    //   }
-    // }
-
-    // const address = event['pathParameters']['address'];
 
     const queryParams = event["queryStringParameters"] || {}
     const typeQuery = queryParams['type'];
-    // const chain = event?.queryStringParameters['chain'];
+    let response;
 
-    // Need filter?
     if (typeQuery) {
-        networks = networks.filter((network) => {
+      response = chains.filter((network) => {
             if (typeQuery === 'testnet') {
                 return  network?.name?.toLowerCase().includes('test') || 
                         network?.title?.toLowerCase().includes('test') || 
@@ -61,18 +37,6 @@ exports.main = async function(event, context) {
             }
         })
     }
-
-    networks = networks.map((network) => {
-        let name;
-        if (network.title) {
-            name = network.title.split(' ')[0].toLowerCase();
-        } else {
-            name = network.name.split(' ')[0].toLowerCase();
-        }
-        network.imageUrl = `https://defillama.com/_next/image?url=%2Fchain-icons%2Frsz_${name}.jpg&w=48&q=75`;
-        return network;
-    })
-    // We only accept GET for now
     return {
       statusCode: 200,
       headers: {
@@ -80,7 +44,7 @@ exports.main = async function(event, context) {
         "Access-Control-Allow-Origin": "*",
         "Access-Control-Allow-Methods": "OPTIONS,POST,GET"
       },
-      body: JSON.stringify(networks)
+      body: JSON.stringify(response)
     };
   } catch(error) {
     var body = error.stack || JSON.stringify(error, null, 2);

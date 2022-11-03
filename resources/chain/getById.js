@@ -9,53 +9,12 @@ https://docs.aws.amazon.com/sdk-for-javascript/v2/developer-guide/calling-servic
 https://docs.aws.amazon.com/lambda/latest/dg/nodejs-prog-model-handler.html 
 */
 const AWS = require('aws-sdk');
-const ethers = require('ethers');
-const axios = require('axios');
-
-const chainMapping = require('../mapping/chains.json');
-
+const chains = require('../data/chains.json');
 
 exports.main = async function(event, context) {
   try {
-    console.log(JSON.stringify(event));
-    const chainsUrl = 'https://chainid.network/chains.json';
-    const chainsTlv = 'https://api.llama.fi/chains';
-    // var method = event.httpMethod;
-
-    const urlQuery = axios.get(chainsUrl);
-    const queries = await Promise.all([urlQuery]);
-    let networks = queries[0].data;
-    // if (method === "GET") {
-    //   if (event.path === "/") {
-    //     const data = await S3.listObjectsV2({ Bucket: bucketName }).promise();
-    //     var body = {
-    //       widgets: data.Contents.map(function(e) { return e.Key })
-    //     };
-    //     return {
-    //       statusCode: 200,
-    //       headers: {},
-    //       body: JSON.stringify(body)
-    //     };
-    //   }
-    // }
-
-    // const address = event['pathParameters']['address'];
-
     let chainId = parseInt(event['pathParameters']['chain_id']);
-
-    const foundNetworks = networks.filter((network) => network.chainId === chainId);
-
-    networks = foundNetworks.map((network) => {
-      let name;
-      if (network.title) {
-          name = network.title.split(' ')[0].toLowerCase();
-      } else {
-          name = network.name.split(' ')[0].toLowerCase();
-      }
-      network.imageUrl = `https://defillama.com/_next/image?url=%2Fchain-icons%2Frsz_${name}.jpg&w=48&q=75`;
-      return network;
-    })
-
+    const foundNetworks = chains.filter((network) => network.chainId === chainId);
     // We only accept GET for now
     return {
       statusCode: 200,
@@ -64,7 +23,7 @@ exports.main = async function(event, context) {
         "Access-Control-Allow-Origin": "*",
         "Access-Control-Allow-Methods": "OPTIONS,POST,GET"
       },
-      body: JSON.stringify(networks.length > 0 ? networks[0] : {})
+      body: JSON.stringify(foundNetworks.length > 0 ? foundNetworks[0] : {})
     };
   } catch(error) {
     var body = error.stack || JSON.stringify(error, null, 2);

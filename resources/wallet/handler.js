@@ -11,48 +11,26 @@ https://docs.aws.amazon.com/lambda/latest/dg/nodejs-prog-model-handler.html
 const AWS = require('aws-sdk');
 const ethers = require('ethers');
 const axios = require('axios');
-
-const chainMapping = require('../mapping/chains.json');
-
+const chains = require('../data/chains.json');
 
 exports.main = async function(event, context) {
   try {
-    console.log(JSON.stringify(event));
-    // var method = event.httpMethod;
-
-
-    // if (method === "GET") {
-    //   if (event.path === "/") {
-    //     const data = await S3.listObjectsV2({ Bucket: bucketName }).promise();
-    //     var body = {
-    //       widgets: data.Contents.map(function(e) { return e.Key })
-    //     };
-    //     return {
-    //       statusCode: 200,
-    //       headers: {},
-    //       body: JSON.stringify(body)
-    //     };
-    //   }
-    // }
-
     const address = event['pathParameters']['address'];
-
     const queryParams = event["queryStringParameters"] || {}
-    const chain = queryParams['chain'] || '1';
-    // const chain = event?.queryStringParameters['chain'];
-    const targetChainUrl = chainMapping[chain];
+    const chainId = queryParams['chain'] ? parseInt(queryParams['chain']) : '1';
+    const foundNetworks = chains.filter((network) => network.chainId === chainId);
+    const network = foundNetworks.length > 0 ? foundNetworks[0] : {}
     const options = {
         "jsonrpc": "2.0",
         "method": "eth_getBalance",
         "params": [address, "latest"],
         "id": 1
     }
-    const response = await axios.post(targetChainUrl, options);
+    const response = await axios.post(network.rpc[0], options);
     const value = response?.data?.result;
     const balance = {
         balance: parseInt(value)
     }
-
     // We only accept GET for now
     return {
       statusCode: 200,
