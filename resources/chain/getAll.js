@@ -9,7 +9,6 @@ https://docs.aws.amazon.com/sdk-for-javascript/v2/developer-guide/calling-servic
 https://docs.aws.amazon.com/lambda/latest/dg/nodejs-prog-model-handler.html 
 */
 const AWS = require('aws-sdk');
-const axios = require('axios');
 
 // Data extracted from
 // https://chainid.network/chains.json
@@ -22,7 +21,7 @@ exports.main = async function(event, context) {
 
     const queryParams = event["queryStringParameters"] || {}
     const typeQuery = queryParams['type'];
-    let response;
+    let response = chains;
 
     if (typeQuery) {
       response = chains.filter((network) => {

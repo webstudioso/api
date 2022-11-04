@@ -4268,7 +4268,13 @@
         "shortName": "maca",
         "chainId": 595,
         "networkId": 595,
-        "imageUrl": "https://defillama.com/_next/image?url=%2Fchain-icons%2Frsz_acala.jpg&w=48&q=75"
+        "imageUrl": "https://defillama.com/_next/image?url=%2Fchain-icons%2Frsz_acala.jpg&w=48&q=75",
+        "explorers": [
+            {
+                "name": "blockscout",
+                "url": "https://blockscout.mandala.acala.network"
+            }
+        ]
     },
     {
         "name": "Karura Network Testnet",

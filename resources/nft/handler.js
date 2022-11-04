@@ -25,9 +25,11 @@ exports.main = async function(event, context) {
     const tokenId = event['pathParameters']['token_id'];
     const queryParams = event["queryStringParameters"] || {};
     const wallet = queryParams['owner_of'];
-    const chain = queryParams['chain'];
-
-    const targetChainUrl = chains.filter(chain || "1")[0].rpc[0];
+    let chainId = queryParams['chain'] ? parseInt(queryParams['chain']) : '1';
+    console.log(`Chain Id: ${chainId}`)
+    const foundNetworks = chains.filter((network) => network.chainId.toString() === chainId.toString());
+    console.log(`Found networks: ${JSON.stringify(foundNetworks)}`)
+    const targetChainUrl = foundNetworks[0].rpc[0];
     let customHttpProvider = new ethers.providers.JsonRpcProvider(targetChainUrl);
   
     const signer = new ethers.Wallet(singatureHash, customHttpProvider);
@@ -62,7 +64,7 @@ exports.main = async function(event, context) {
       owner_of: queries[3],
       amount: parseInt(queries[4]),
       contract_type: isERC721 ? 'ERC721' : 'ERC1155',
-      chain
+      chain: chainId
     }
 
     return {
