@@ -5,3 +5,4 @@ node_modules
 cdk.out
 node_modules
 resources/node_modules
+.env
