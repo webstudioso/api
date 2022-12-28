@@ -27,37 +27,125 @@ exports.main = async (event, context) => {
 
     try {
         switch (route) {
-            case "GET /project/{id}":
-                const data = await projectDB
-                    .get({
+
+            case "GET /project":
+                const response = await projectDB
+                    .query({
                         TableName: TABLE,
-                        Key: {
-                            id: event.pathParameters.id
+                        IndexName: "OwnerIndex",
+                        KeyConditionExpression: "o = :o",
+                        ExpressionAttributeValues: {
+                            ":o": event.queryStringParameters.owner
                         }
                     })
                     .promise();
-                body = data?.Item;
+                body = response?.Items?.map((item) => {
+                    return {
+                        id: item.i,
+                        owner: item.o,
+                        subdomain: item.s,
+                        domain: item.d,
+                        metadata: item.m,
+                        plan: item.p,
+                        name: item.n
+                    }
+                });
                 break;
-            case "POST /project/{id}":
-                let requestJSON = JSON.parse(event.body);
-                await projectDB
-                    .put({
+            case "GET /project/{id}":
+                const item = await projectDB
+                    .get({
                         TableName: TABLE,
-                        Item: requestJSON
+                        Key: {
+                            i: event.pathParameters.id
+                        }
                     })
                     .promise();
-                body = `Post item ${requestJSON.id}`;
+                body = item ? {
+                    id: item.Item.i,
+                    owner: item.Item.o,
+                    subdomain: item.Item.s,
+                    domain: item.Item.d,
+                    metadata: item.Item.m,
+                    plan: item.Item.p,
+                    name: item.Item.n
+                } : { };
+                break;
+            case "POST /project/{id}":
+                let bodyJSON = JSON.parse(event.body);
+                await projectDB
+                    .update({
+                        TableName: TABLE,
+                        Key: {
+                            i: event.pathParameters.id
+                        },
+                        UpdateExpression: "set s = :s, o = :o, d = :d, m = :m, p = :p, n = :n",
+                        ExpressionAttributeValues: {
+                            ":s": bodyJSON.subdomain,
+                            ":o": bodyJSON.owner,
+                            ":d": bodyJSON.domain,
+                            ":m": bodyJSON.metadata,
+                            ":p": bodyJSON.plan,
+                            ":n": bodyJSON.name
+                        }
+                    })
+                    .promise();
+                body = `Update item ${event.pathParameters.id}`;
                 break;
             case "DELETE /project/{id}":
                 await projectDB
                     .delete({
                         TableName: TABLE,
                         Key: {
-                            id: event.pathParameters.id
+                            i: event.pathParameters.id
                         }
                     })
                     .promise();
                 body = `Deleted item ${event.pathParameters.id}`;
+                break;
+
+
+                
+            case "GET /project/{id}/content":
+                const data = await projectDB
+                    .get({
+                        TableName: TABLE,
+                        Key: {
+                            i: event.pathParameters.id
+                        }
+                    })
+                    .promise();
+                body = data?.Item?.c;
+                break;
+            case "POST /project/{id}/content":
+                let requestJSON = JSON.parse(event.body);
+                await projectDB
+                    .update({
+                        TableName: TABLE,
+                        Key: {
+                            i: event.pathParameters.id
+                        },
+                        UpdateExpression: "set c = :c",
+                        ExpressionAttributeValues: {
+                            ":c": requestJSON
+                        }
+                    })
+                    .promise();
+                body = `Updated project content ${requestJSON.id}`;
+                break;
+            case "DELETE /project/{id}/content":
+                await projectDB
+                    .update({
+                        TableName: TABLE,
+                        Key: {
+                            i: event.pathParameters.id
+                        },
+                        UpdateExpression: "set c = :c",
+                        ExpressionAttributeValues: {
+                            ":c": null
+                        }
+                    })
+                    .promise();
+                body = `Deleted project content ${event.pathParameters.id}`;
                 break;
 
             default:
