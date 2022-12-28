@@ -32,18 +32,24 @@ exports.main = async (event, context) => {
                     .get({
                         TableName: TABLE,
                         Key: {
-                            id: event.pathParameters.id
+                            i: event.pathParameters.id
                         }
                     })
                     .promise();
-                body = data?.Item;
+                body = data?.Item ? {
+                    id: data.Item.i,
+                    cid: data.Item.c
+                }: {};
                 break;
             case "POST /route/{id}":
                 let requestJSON = JSON.parse(event.body);
                 await routeDB
                     .put({
                         TableName: TABLE,
-                        Item: requestJSON
+                        Item: {
+                            i: requestJSON.id,
+                            c: requestJSON.cid
+                        }
                     })
                     .promise();
                 body = `Post item ${requestJSON.id}`;
@@ -53,7 +59,7 @@ exports.main = async (event, context) => {
                     .delete({
                         TableName: TABLE,
                         Key: {
-                            id: event.pathParameters.id
+                            i: event.pathParameters.id
                         }
                     })
                     .promise();
