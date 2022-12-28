@@ -1,9 +1,9 @@
 const AWS = require("aws-sdk");
 
-const projectDB = new AWS.DynamoDB.DocumentClient();
+const routeDB = new AWS.DynamoDB.DocumentClient();
 
 exports.main = async (event, context) => {
-    const TABLE= 'Projects'
+    const TABLE= 'Routes'
     let body;
     let statusCode = 200;
     const referer = event?.headers?.Referer ? event?.headers?.Referer : 'https://dappify.com';
@@ -27,8 +27,8 @@ exports.main = async (event, context) => {
 
     try {
         switch (route) {
-            case "GET /project/{id}":
-                const data = await projectDB
+            case "GET /route/{id}":
+                const data = await routeDB
                     .get({
                         TableName: TABLE,
                         Key: {
@@ -38,9 +38,9 @@ exports.main = async (event, context) => {
                     .promise();
                 body = data?.Item;
                 break;
-            case "POST /project/{id}":
+            case "POST /route/{id}":
                 let requestJSON = JSON.parse(event.body);
-                await projectDB
+                await routeDB
                     .put({
                         TableName: TABLE,
                         Item: requestJSON
@@ -48,8 +48,8 @@ exports.main = async (event, context) => {
                     .promise();
                 body = `Post item ${requestJSON.id}`;
                 break;
-            case "DELETE /project/{id}":
-                await projectDB
+            case "DELETE /route/{id}":
+                await routeDB
                     .delete({
                         TableName: TABLE,
                         Key: {
