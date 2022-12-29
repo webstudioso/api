@@ -6,19 +6,12 @@ exports.main = async (event, context) => {
     const TABLE= 'Projects'
     let body;
     let statusCode = 200;
-    const referer = event?.headers?.Referer ? event?.headers?.Referer : 'https://dappify.com';
-    console.log(referer);
     const headers = {
         "Content-Type": "application/json",
         "Access-Control-Allow-Headers" : "Origin,X-Requested-With,Content-Type,Accept",
-        "Access-Control-Allow-Origin": referer.replace(/\/$/,''),
+        "Access-Control-Allow-Origin": event?.headers?.Referer?.replace(/\/$/,''),
         "Access-Control-Allow-Credentials": true
     };
-    // if (event?.headers?.Referer) {
-    //     headers["Access-Control-Allow-Origin"] = event.headers.Referer;
-    // } else {
-    //     // No referer
-    // }
 
     console.log(JSON.stringify(event));
     let path = event.resource;
