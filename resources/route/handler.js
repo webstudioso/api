@@ -1,6 +1,16 @@
 const AWS = require("aws-sdk");
+const { Magic } = require('@magic-sdk/admin');
+const mAdmin = new Magic(process.env.MAGIC);
 
 const routeDB = new AWS.DynamoDB.DocumentClient();
+
+const getIssuer = (event) => {
+    // Get issuer
+    const DIDToken = event.headers.authorizetoken.substring(7);
+    const issuer = mAdmin.token.getIssuer(DIDToken);
+    console.log(`User ${issuer} request received`);
+    return issuer;    
+}
 
 exports.main = async (event, context) => {
     const TABLE= 'Routes'
@@ -37,11 +47,16 @@ exports.main = async (event, context) => {
             case "POST /route/{id}":
                 let requestJSON = JSON.parse(event.body);
                 await routeDB
-                    .put({
+                    .update({
                         TableName: TABLE,
-                        Item: {
-                            i: requestJSON.id,
-                            c: requestJSON.cid
+                        Key: {
+                            i: event.pathParameters.id
+                        },
+                        UpdateExpression: "set c = :c, o = :o",
+                        ConditionExpression: "attribute_not_exists(i) OR o = :o",
+                        ExpressionAttributeValues: {
+                            ":c": requestJSON.cid,
+                            ":o": getIssuer(event)
                         }
                     })
                     .promise();
@@ -53,6 +68,10 @@ exports.main = async (event, context) => {
                         TableName: TABLE,
                         Key: {
                             i: event.pathParameters.id
+                        },
+                        ConditionExpression: "o = :o",
+                        ExpressionAttributeValues: {
+                            ":o": getIssuer(event)
                         }
                     })
                     .promise();
