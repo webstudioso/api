@@ -1,4 +1,6 @@
 const AWS = require("aws-sdk");
+const { Magic } = require('@magic-sdk/admin');
+const mAdmin = new Magic(process.env.MAGIC);
 
 const projectDB = new AWS.DynamoDB.DocumentClient();
 
@@ -18,6 +20,11 @@ exports.main = async (event, context) => {
     let httpMethod = event.httpMethod;
     let route = httpMethod.concat(' ').concat(path);
 
+    // Get issuer
+    const DIDToken = event.headers.authorizetoken.substring(7);
+    const issuer = mAdmin.token.getIssuer(DIDToken);
+    console.log(`User ${issuer} request received`);
+
     try {
         switch (route) {
 
@@ -28,14 +35,13 @@ exports.main = async (event, context) => {
                         IndexName: "OwnerIndex",
                         KeyConditionExpression: "o = :o",
                         ExpressionAttributeValues: {
-                            ":o": event.queryStringParameters.owner
+                            ":o": issuer
                         }
                     })
                     .promise();
                 body = response?.Items?.map((item) => {
                     return {
                         id: item.i,
-                        owner: item.o,
                         subdomain: item.s,
                         domain: item.d,
                         metadata: item.m,
@@ -50,12 +56,15 @@ exports.main = async (event, context) => {
                         TableName: TABLE,
                         Key: {
                             i: event.pathParameters.id
+                        },
+                        ConditionExpression: "o = :o",
+                        ExpressionAttributeValues: {
+                            ":o": issuer
                         }
                     })
                     .promise();
                 body = item ? {
                     id: item.Item.i,
-                    owner: item.Item.o,
                     subdomain: item.Item.s,
                     domain: item.Item.d,
                     metadata: item.Item.m,
@@ -71,14 +80,15 @@ exports.main = async (event, context) => {
                         Key: {
                             i: event.pathParameters.id
                         },
-                        UpdateExpression: "set s = :s, o = :o, d = :d, m = :m, p = :p, n = :n",
+                        UpdateExpression: "set s = :s, d = :d, m = :m, p = :p, n = :n, o = :o",
+                        ConditionExpression: "attribute_not_exists(i) OR o = :o",
                         ExpressionAttributeValues: {
                             ":s": bodyJSON.subdomain,
-                            ":o": bodyJSON.owner,
                             ":d": bodyJSON.domain,
                             ":m": bodyJSON.metadata,
                             ":p": bodyJSON.plan,
-                            ":n": bodyJSON.name
+                            ":n": bodyJSON.name,
+                            ":o": issuer
                         }
                     })
                     .promise();
@@ -90,20 +100,26 @@ exports.main = async (event, context) => {
                         TableName: TABLE,
                         Key: {
                             i: event.pathParameters.id
+                        },
+                        ConditionExpression: "o = :o",
+                        ExpressionAttributeValues: {
+                            ":o": issuer
                         }
                     })
                     .promise();
                 body = `Deleted item ${event.pathParameters.id}`;
                 break;
 
-
-                
             case "GET /project/{id}/content":
                 const data = await projectDB
                     .get({
                         TableName: TABLE,
                         Key: {
                             i: event.pathParameters.id
+                        },
+                        ConditionExpression: "o = :o",
+                        ExpressionAttributeValues: {
+                            ":o": issuer
                         }
                     })
                     .promise();
@@ -118,8 +134,10 @@ exports.main = async (event, context) => {
                             i: event.pathParameters.id
                         },
                         UpdateExpression: "set c = :c",
+                        ConditionExpression: "o = :o",
                         ExpressionAttributeValues: {
-                            ":c": requestJSON
+                            ":c": requestJSON,
+                            ":o": issuer
                         }
                     })
                     .promise();
@@ -133,8 +151,10 @@ exports.main = async (event, context) => {
                             i: event.pathParameters.id
                         },
                         UpdateExpression: "set c = :c",
+                        ConditionExpression: "o = :o",
                         ExpressionAttributeValues: {
-                            ":c": null
+                            ":c": null,
+                            ":o": issuer
                         }
                     })
                     .promise();
