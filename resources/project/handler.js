@@ -80,12 +80,11 @@ exports.main = async (event, context) => {
                         Key: {
                             i: event.pathParameters.id
                         },
-                        UpdateExpression: "set s = :s, d = :d, m = :m, p = :p, n = :n, o = :o",
+                        UpdateExpression: "set s = :s, d = :d, p = :p, n = :n, o = :o",
                         ConditionExpression: "attribute_not_exists(i) OR o = :o",
                         ExpressionAttributeValues: {
                             ":s": bodyJSON.subdomain,
                             ":d": bodyJSON.domain,
-                            ":m": bodyJSON.metadata,
                             ":p": bodyJSON.plan,
                             ":n": bodyJSON.name,
                             ":o": issuer
@@ -160,7 +159,24 @@ exports.main = async (event, context) => {
                     .promise();
                 body = `Deleted project content ${event.pathParameters.id}`;
                 break;
-
+            case "POST /project/{id}/metadata":
+                    let metaJSON = JSON.parse(event.body);
+                    await projectDB
+                        .update({
+                            TableName: TABLE,
+                            Key: {
+                                i: event.pathParameters.id
+                            },
+                            UpdateExpression: "set m = :m",
+                            ConditionExpression: "o = :o",
+                            ExpressionAttributeValues: {
+                                ":m": metaJSON,
+                                ":o": issuer
+                            }
+                        })
+                        .promise();
+                    body = `Updated project metadata ${event.pathParameters.id}`;
+                    break;
             default:
                 throw new Error(`Unsupported route: "${route}"`);
         }
