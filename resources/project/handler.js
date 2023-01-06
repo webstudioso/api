@@ -122,7 +122,7 @@ exports.main = async (event, context) => {
                         }
                     })
                     .promise();
-                body = data?.Item?.c;
+                body = data?.Item?.c ? JSON.parse(data.Item.c) : {};
                 break;
             case "POST /project/{id}/content":
                 let requestJSON = JSON.parse(event.body);
@@ -135,7 +135,7 @@ exports.main = async (event, context) => {
                         UpdateExpression: "set c = :c",
                         ConditionExpression: "o = :o",
                         ExpressionAttributeValues: {
-                            ":c": requestJSON,
+                            ":c": JSON.stringify(requestJSON),
                             ":o": issuer
                         }
                     })
