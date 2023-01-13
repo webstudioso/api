@@ -1,8 +1,8 @@
 {
-  "name": "dappify-api",
+  "name": "webstudio-api",
   "version": "0.1.0",
   "bin": {
-    "dappify-api": "bin/dappify-api.js"
+    "webstudio-api": "bin/webstudio-api.js"
   },
   "scripts": {
     "build": "echo \"The build step is not required when using JavaScript!\" && exit 0",
