@@ -1,10 +1,10 @@
 #!/usr/bin/env node
 
 const cdk = require('aws-cdk-lib');
-const { DappifyApiStack } = require('../lib/dappify-api-stack');
+const { WebstudioApiStack } = require('../lib/webstudio-api-stack');
 
 const app = new cdk.App();
-new DappifyApiStack(app, 'DappifyApiStack', {
+new WebstudioApiStack(app, 'WebstudioApiStack', {
   /* If you don't specify 'env', this stack will be environment-agnostic.
    * Account/Region-dependent features and context lookups will not work,
    * but a single synthesized template can be deployed anywhere. */

@@ -1,4 +1,4 @@
-name: Dappify API Deploy Development
+name: Webstudio API Deploy Development
 on:
   push:
     branches:
@@ -20,16 +20,16 @@ jobs:
             public
             .cache
             node_modules
-          key: ${{ runner.os }}-dappify-api-${{ github.run_id }}
+          key: ${{ runner.os }}-webstudio-api-${{ github.run_id }}
           restore-keys: |
-            ${{ runner.os }}-dappify-api
+            ${{ runner.os }}-webstudio-api
       - name: Install dependencies
         run: npm i; cd resources; npm i
       - name: cdk deploy
         uses: youyo/aws-cdk-github-actions@v2
         with:
           cdk_subcommand: 'deploy'
-          cdk_stack: 'DappifyApiStack'
+          cdk_stack: 'WebstudioApiStack'
           cdk_args: '--require-approval never'
           actions_comment: false
         env:
@@ -38,4 +38,4 @@ jobs:
           ACM_ARN: ${{ secrets.ACM_ARN_DEV }}
           AWS_ACCOUNT: ${{ secrets.AWS_ACCOUNT_DEV }}
           AWS_REGION: ${{ secrets.AWS_REGION }}
-          ROOT_DOMAIN: dev.dappify.com
+          ROOT_DOMAIN: dev.webstudio.so
