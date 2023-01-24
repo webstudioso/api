@@ -63,7 +63,7 @@ exports.main = async (event, context) => {
                         }
                     })
                     .promise();
-                body = item ? {
+                body = item?.Item ? {
                     id: item.Item.i,
                     subdomain: item.Item.s,
                     domain: item.Item.d,
