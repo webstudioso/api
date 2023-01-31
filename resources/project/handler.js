@@ -23,7 +23,7 @@ exports.main = async (event, context) => {
     // Get issuer
     const DIDToken = event.headers.authorizetoken.substring(7);
     const issuer = mAdmin.token.getIssuer(DIDToken);
-    console.log(`User ${issuer} request received`);
+    console.log(`User ${issuer}`);
 
     try {
         switch (route) {
@@ -46,7 +46,9 @@ exports.main = async (event, context) => {
                         domain: item.d,
                         metadata: item.m,
                         plan: item.p,
-                        name: item.n
+                        name: item.n,
+                        owner: item.o,
+                        collaborators: item.u
                     }
                 });
                 break;
@@ -57,7 +59,7 @@ exports.main = async (event, context) => {
                         Key: {
                             i: event.pathParameters.id
                         },
-                        ConditionExpression: "o = :o",
+                        ConditionExpression: "o = :o OR contains(u, :o)",
                         ExpressionAttributeValues: {
                             ":o": issuer
                         }
@@ -69,7 +71,9 @@ exports.main = async (event, context) => {
                     domain: item.Item.d,
                     metadata: item.Item.m,
                     plan: item.Item.p,
-                    name: item.Item.n
+                    name: item.Item.n,
+                    owner: item.Item.o,
+                    collaborators: item.Item.u
                 } : { };
                 break;
             case "POST /project/{id}":
@@ -80,13 +84,14 @@ exports.main = async (event, context) => {
                         Key: {
                             i: event.pathParameters.id
                         },
-                        UpdateExpression: "set s = :s, d = :d, p = :p, n = :n, o = :o",
+                        UpdateExpression: "set s = :s, d = :d, p = :p, n = :n, o = :o, u =:u",
                         ConditionExpression: "attribute_not_exists(i) OR o = :o",
                         ExpressionAttributeValues: {
                             ":s": bodyJSON.subdomain,
                             ":d": bodyJSON.domain,
                             ":p": bodyJSON.plan,
                             ":n": bodyJSON.name,
+                            ":u": bodyJSON.collaborators,
                             ":o": issuer
                         }
                     })
@@ -116,7 +121,7 @@ exports.main = async (event, context) => {
                         Key: {
                             i: event.pathParameters.id
                         },
-                        ConditionExpression: "o = :o",
+                        ConditionExpression: "o = :o OR contains(u, :o)",
                         ExpressionAttributeValues: {
                             ":o": issuer
                         }
@@ -133,7 +138,7 @@ exports.main = async (event, context) => {
                             i: event.pathParameters.id
                         },
                         UpdateExpression: "set c = :c",
-                        ConditionExpression: "o = :o",
+                        ConditionExpression: "o = :o OR contains(u, :o)",
                         ExpressionAttributeValues: {
                             ":c": JSON.stringify(requestJSON),
                             ":o": issuer
@@ -150,7 +155,7 @@ exports.main = async (event, context) => {
                             i: event.pathParameters.id
                         },
                         UpdateExpression: "set c = :c",
-                        ConditionExpression: "o = :o",
+                        ConditionExpression: "o = :o OR contains(u, :o)",
                         ExpressionAttributeValues: {
                             ":c": null,
                             ":o": issuer
@@ -168,7 +173,7 @@ exports.main = async (event, context) => {
                                 i: event.pathParameters.id
                             },
                             UpdateExpression: "set m = :m",
-                            ConditionExpression: "o = :o",
+                            ConditionExpression: "o = :o OR contains(u, :o)",
                             ExpressionAttributeValues: {
                                 ":m": metaJSON,
                                 ":o": issuer
