@@ -1,3 +1,6 @@
+ # Webstudio API
+This API enables [Webstudio](https://webstudio.so) app store and retrieve data from projects and launch projects to IPFS. It is built using AWS CDK.
+
 # Welcome to your CDK JavaScript project
 
 This is a blank project for CDK development with JavaScript.
