@@ -84,7 +84,7 @@ exports.main = async (event, context) => {
                         Key: {
                             i: event.pathParameters.id
                         },
-                        UpdateExpression: "set s = :s, d = :d, p = :p, n = :n, o = :o, u =:u",
+                        UpdateExpression: "set s = :s, d = :d, p = :p, n = :n, o = :o, u =:u, m =:m",
                         ConditionExpression: "attribute_not_exists(i) OR o = :o",
                         ExpressionAttributeValues: {
                             ":s": bodyJSON.subdomain,
@@ -92,6 +92,7 @@ exports.main = async (event, context) => {
                             ":p": bodyJSON.plan,
                             ":n": bodyJSON.name,
                             ":u": bodyJSON.collaborators,
+                            ":m": bodyJSON.metadata,
                             ":o": issuer
                         }
                     })
