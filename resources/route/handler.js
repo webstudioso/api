@@ -3,6 +3,18 @@ const { Magic } = require('@magic-sdk/admin');
 const mAdmin = new Magic(process.env.MAGIC);
 
 const routeDB = new AWS.DynamoDB.DocumentClient();
+const cloudFront = new AWS.CloudFront();
+
+const cloudfrontInvalidationParams = {
+    DistributionId: process.env.AWS_CF_DISTRIBUTION_ID,
+    InvalidationBatch: {
+      CallerReference: String(new Date().getTime()),
+      Paths: {
+        Quantity: 1,
+        Items: ['/']
+      }
+    }
+  }
 
 const getIssuer = (event) => {
     // Get issuer
@@ -10,6 +22,13 @@ const getIssuer = (event) => {
     const issuer = mAdmin.token.getIssuer(DIDToken);
     console.log(`User ${issuer} request received`);
     return issuer;    
+}
+
+const invalidateCache = () => {
+    // For now invalidate *.webstudio.so cache on every publish, don't wait
+    // Needs to be done via queue request and notify in UI
+    cloudFront.createInvalidation(cloudfrontInvalidationParams);
+    console.log(`Cache invalidation submitted for distribution ${process.env.AWS_CF_DISTRIBUTION_ID}`);
 }
 
 exports.main = async (event, context) => {
@@ -61,6 +80,7 @@ exports.main = async (event, context) => {
                     })
                     .promise();
                 body = `Post item ${requestJSON.id}`;
+                invalidateCache()
                 break;
             case "DELETE /route/{id}":
                 await routeDB
@@ -76,6 +96,7 @@ exports.main = async (event, context) => {
                     })
                     .promise();
                 body = `Deleted item ${event.pathParameters.id}`;
+                invalidateCache()
                 break;
 
             default:
