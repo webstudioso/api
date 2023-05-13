@@ -28,7 +28,7 @@ const invalidateCache = async () => {
     // For now invalidate *.webstudio.so cache on every publish
     // Needs to be done via queue request and notify in UI
     await cloudFront.createInvalidation(cloudfrontInvalidationParams).promise();
-    console.log(`Cache invalidation submitted for distribution ${process.env.AWS_CF_DISTRIBUTION_ID}`);
+    console.log(`Cache invalidation submitted for distribution ${JSON.stringify(cloudfrontInvalidationParams)}`);
 }
 
 exports.main = async (event, context) => {
