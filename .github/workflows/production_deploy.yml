@@ -38,4 +38,5 @@ jobs:
           ACM_ARN: ${{ secrets.ACM_ARN }}
           AWS_ACCOUNT: ${{ secrets.AWS_ACCOUNT }}
           AWS_REGION: ${{ secrets.AWS_REGION }}
+          AWS_CF_DISTRIBUTION_ID: ${{ secrets.AWS_CLOUDFRONT_DISTRIBUTION_ID }}
           ROOT_DOMAIN: webstudio.so
