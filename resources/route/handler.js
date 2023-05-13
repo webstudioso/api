@@ -60,7 +60,8 @@ exports.main = async (event, context) => {
                     .promise();
                 body = data?.Item ? {
                     id: data.Item.i,
-                    cid: data.Item.c
+                    cid: data.Item.c,
+                    ts: data.Item.t
                 }: {};
                 break;
             case "POST /route/{id}":
@@ -71,11 +72,12 @@ exports.main = async (event, context) => {
                         Key: {
                             i: event.pathParameters.id
                         },
-                        UpdateExpression: "set c = :c, o = :o",
+                        UpdateExpression: "set c = :c, o = :o, t = :t",
                         ConditionExpression: "attribute_not_exists(i) OR o = :o",
                         ExpressionAttributeValues: {
                             ":c": requestJSON.cid,
-                            ":o": getIssuer(event)
+                            ":o": getIssuer(event),
+                            ":t": Date.now()
                         }
                     })
                     .promise();
