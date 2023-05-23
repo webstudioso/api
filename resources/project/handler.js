@@ -1,5 +1,6 @@
 const AWS = require("aws-sdk");
 const { Magic } = require('@magic-sdk/admin');
+const { gzipSync, gunzipSync } = require('zlib');
 const mAdmin = new Magic(process.env.MAGIC);
 
 const projectDB = new AWS.DynamoDB.DocumentClient();
@@ -128,10 +129,28 @@ exports.main = async (event, context) => {
                         }
                     })
                     .promise();
-                body = data?.Item?.c ? JSON.parse(data.Item.c) : {};
+
+                if (data?.Item?.c) {
+                    // Content exist for this project, we try to decompress
+                    let responsePayload = {}
+                    try {
+                        console.log(`Trying to decompress with zlib ${event.pathParameters.id}`)
+                        responsePayload = gunzipSync(data.Item.c).toString();
+                    } catch (e) {
+                        console.log(`Zlib decompression failed, record is stored pure. Return database unadultered data`)
+                        responsePayload = data.Item.c
+                    } finally {
+                        console.log(`Parsing to JSON retrieved fields`)
+                        body = JSON.parse(responsePayload)
+                    }
+                } else {
+                    // No content yet for this project, return empty
+                    body = {}
+                }
                 break;
             case "POST /project/{id}/content":
-                let requestJSON = JSON.parse(event.body);
+                // Compress payload
+                const compressed = gzipSync(event.body);
                 await projectDB
                     .update({
                         TableName: TABLE,
@@ -141,12 +160,12 @@ exports.main = async (event, context) => {
                         UpdateExpression: "set c = :c",
                         ConditionExpression: "o = :o OR contains(u, :o)",
                         ExpressionAttributeValues: {
-                            ":c": JSON.stringify(requestJSON),
+                            ":c": compressed,
                             ":o": issuer
                         }
                     })
                     .promise();
-                body = `Updated project content ${requestJSON.id}`;
+                body = `Updated project content ${event.pathParameters.id}`;
                 break;
             case "DELETE /project/{id}/content":
                 await projectDB
