@@ -134,7 +134,8 @@ exports.main = async (event, context) => {
                     // Content exist for this project, we try to decompress
                     let responsePayload = {}
                     try {
-                        console.log(`Trying to decompress with zlib ${event.pathParameters.id}`)
+                        console.log(`Trying to decompress with zlib ${event.pathParameters.id} data`)
+                        console.log(data.Item.c)
                         responsePayload = gunzipSync(data.Item.c).toString();
                     } catch (e) {
                         console.log(`Zlib decompression failed, record is stored pure. Return database unadultered data`)
