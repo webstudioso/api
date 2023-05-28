@@ -136,7 +136,6 @@ exports.main = async (event, context) => {
                     try {
                         console.log(`Trying to decompress with zlib ${event.pathParameters.id} data`)
                         responsePayload = gunzipSync(data.Item.c).toString();
-                        console.log(data.Item.c.toString());
                     } catch (e) {
                         console.log(`Zlib decompression failed, record is stored pure. Return database unadultered data`)
                         responsePayload = data.Item.c
@@ -152,6 +151,8 @@ exports.main = async (event, context) => {
             case "POST /project/{id}/content":
                 // Compress payload
                 const compressed = gzipSync(event.body);
+                console.log(`Storing data for project ${event.pathParameters.id}`)
+                console.log(compressed.toString('hex'))
                 await projectDB
                     .update({
                         TableName: TABLE,
