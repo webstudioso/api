@@ -152,7 +152,7 @@ exports.main = async (event, context) => {
                 // Compress payload
                 const compressed = gzipSync(event.body);
                 console.log(`Storing data for project ${event.pathParameters.id}`)
-                console.log(compressed.toString('hex'))
+                console.log(compressed.toString('base64'))
                 await projectDB
                     .update({
                         TableName: TABLE,
