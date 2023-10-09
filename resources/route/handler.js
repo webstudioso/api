@@ -1,9 +1,14 @@
 const { DynamoDBClient } = require('@aws-sdk/client-dynamodb');
-const { CloudFrontClient } = require("@aws-sdk/client-cloudfront");
+const {
+    DynamoDBDocument, GetCommand, PutCommand, DeleteCommand, QueryCommand, UpdateCommand, ScanCommand,
+  } = require('@aws-sdk/lib-dynamodb');
+const { CloudFrontClient, CreateInvalidationCommand } = require("@aws-sdk/client-cloudfront");
 const { Magic } = require('@magic-sdk/admin');
 const mAdmin = new Magic(process.env.MAGIC);
 
-const routeDB = new DynamoDBClient();
+const routeDBClient = new DynamoDBClient();
+const routeDB = DynamoDBDocument.from(routeDBClient);
+
 const cloudFront = new CloudFrontClient();
 
 const cloudfrontInvalidationParams = {
@@ -28,7 +33,7 @@ const getIssuer = (event) => {
 const invalidateCache = async () => {
     // For now invalidate *.webstudio.so cache on every publish
     // Needs to be done via queue request and notify in UI
-    await cloudFront.createInvalidation(cloudfrontInvalidationParams).promise();
+    await cloudFront.send(new CreateInvalidationCommand(cloudfrontInvalidationParams)).promise();
     console.log(`Cache invalidation submitted for distribution ${JSON.stringify(cloudfrontInvalidationParams)}`);
 }
 
@@ -52,12 +57,12 @@ exports.main = async (event, context) => {
         switch (route) {
             case "GET /route/{id}":
                 const data = await routeDB
-                    .get({
+                    .send(new GetCommand({
                         TableName: TABLE,
                         Key: {
                             i: event.pathParameters.id
                         }
-                    })
+                    }))
                     .promise();
                 body = data?.Item ? {
                     id: data.Item.i,
@@ -68,7 +73,7 @@ exports.main = async (event, context) => {
             case "POST /route/{id}":
                 let requestJSON = JSON.parse(event.body);
                 await routeDB
-                    .update({
+                    .send(new UpdateCommand({
                         TableName: TABLE,
                         Key: {
                             i: event.pathParameters.id
@@ -80,14 +85,14 @@ exports.main = async (event, context) => {
                             ":o": getIssuer(event),
                             ":t": Date.now()
                         }
-                    })
+                    }))
                     .promise();
                 body = `Post item ${requestJSON.id}`;
                 invalidateCache()
                 break;
             case "DELETE /route/{id}":
                 await routeDB
-                    .delete({
+                    .send(new DeleteCommand({
                         TableName: TABLE,
                         Key: {
                             i: event.pathParameters.id
@@ -96,7 +101,7 @@ exports.main = async (event, context) => {
                         ExpressionAttributeValues: {
                             ":o": getIssuer(event)
                         }
-                    })
+                    }))
                     .promise();
                 body = `Deleted item ${event.pathParameters.id}`;
                 invalidateCache()
