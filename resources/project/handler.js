@@ -1,9 +1,13 @@
-const AWS = require("aws-sdk");
+const { DynamoDBClient } = require('@aws-sdk/client-dynamodb');
+const {
+    DynamoDBDocumentClient , GetCommand, PutCommand, DeleteCommand, QueryCommand, UpdateCommand, ScanCommand,
+  } = require('@aws-sdk/lib-dynamodb');
 const { Magic } = require('@magic-sdk/admin');
 const { gzipSync, gunzipSync } = require('zlib');
 const mAdmin = new Magic(process.env.MAGIC);
 
-const projectDB = new AWS.DynamoDB.DocumentClient();
+const projectDBClient = new DynamoDBClient({});
+const projectDB = DynamoDBDocumentClient.from(projectDBClient);
 
 exports.main = async (event, context) => {
     const TABLE= 'Projects'
@@ -31,15 +35,14 @@ exports.main = async (event, context) => {
 
             case "GET /project":
                 const response = await projectDB
-                    .query({
+                    .send(new QueryCommand({
                         TableName: TABLE,
                         IndexName: "OwnerIndex",
                         KeyConditionExpression: "o = :o",
                         ExpressionAttributeValues: {
                             ":o": issuer
                         }
-                    })
-                    .promise();
+                    }));
                 body = response?.Items?.map((item) => {
                     return {
                         id: item.i,
@@ -55,7 +58,7 @@ exports.main = async (event, context) => {
                 break;
             case "GET /project/{id}":
                 const item = await projectDB
-                    .get({
+                    .send(new GetCommand({
                         TableName: TABLE,
                         Key: {
                             i: event.pathParameters.id
@@ -64,8 +67,7 @@ exports.main = async (event, context) => {
                         ExpressionAttributeValues: {
                             ":o": issuer
                         }
-                    })
-                    .promise();
+                    }));
                 body = item?.Item ? {
                     id: item.Item.i,
                     subdomain: item.Item.s,
@@ -80,7 +82,7 @@ exports.main = async (event, context) => {
             case "POST /project/{id}":
                 let bodyJSON = JSON.parse(event.body);
                 await projectDB
-                    .update({
+                    .send(new UpdateCommand({
                         TableName: TABLE,
                         Key: {
                             i: event.pathParameters.id
@@ -96,13 +98,12 @@ exports.main = async (event, context) => {
                             ":m": bodyJSON.metadata,
                             ":o": issuer
                         }
-                    })
-                    .promise();
+                    }));
                 body = `Update item ${event.pathParameters.id}`;
                 break;
             case "DELETE /project/{id}":
                 await projectDB
-                    .delete({
+                    .send(new DeleteCommand({
                         TableName: TABLE,
                         Key: {
                             i: event.pathParameters.id
@@ -111,14 +112,13 @@ exports.main = async (event, context) => {
                         ExpressionAttributeValues: {
                             ":o": issuer
                         }
-                    })
-                    .promise();
+                    }));
                 body = `Deleted item ${event.pathParameters.id}`;
                 break;
 
             case "GET /project/{id}/content":
                 const data = await projectDB
-                    .get({
+                    .send(new GetCommand({
                         TableName: TABLE,
                         Key: {
                             i: event.pathParameters.id
@@ -127,8 +127,7 @@ exports.main = async (event, context) => {
                         ExpressionAttributeValues: {
                             ":o": issuer
                         }
-                    })
-                    .promise();
+                    }));
 
                 if (data?.Item?.c) {
                     // Content exist for this project, we try to decompress
@@ -154,7 +153,7 @@ exports.main = async (event, context) => {
                 console.log(`Storing data for project ${event.pathParameters.id}`)
                 console.log(compressed.toString('base64'))
                 await projectDB
-                    .update({
+                    .send(new UpdateCommand({
                         TableName: TABLE,
                         Key: {
                             i: event.pathParameters.id
@@ -165,13 +164,12 @@ exports.main = async (event, context) => {
                             ":c": compressed,
                             ":o": issuer
                         }
-                    })
-                    .promise();
+                    }));
                 body = `Updated project content ${event.pathParameters.id}`;
                 break;
             case "DELETE /project/{id}/content":
                 await projectDB
-                    .update({
+                    .send(new UpdateCommand({
                         TableName: TABLE,
                         Key: {
                             i: event.pathParameters.id
@@ -182,14 +180,13 @@ exports.main = async (event, context) => {
                             ":c": null,
                             ":o": issuer
                         }
-                    })
-                    .promise();
+                    }));
                 body = `Deleted project content ${event.pathParameters.id}`;
                 break;
             case "POST /project/{id}/metadata":
                     let metaJSON = JSON.parse(event.body);
                     await projectDB
-                        .update({
+                        .send(new UpdateCommand({
                             TableName: TABLE,
                             Key: {
                                 i: event.pathParameters.id
@@ -200,8 +197,7 @@ exports.main = async (event, context) => {
                                 ":m": metaJSON,
                                 ":o": issuer
                             }
-                        })
-                        .promise();
+                        }));
                     body = `Updated project metadata ${event.pathParameters.id}`;
                     break;
             default:
