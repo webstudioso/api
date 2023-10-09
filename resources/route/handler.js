@@ -1,13 +1,13 @@
 const { DynamoDBClient } = require('@aws-sdk/client-dynamodb');
 const {
-    DynamoDBDocument, GetCommand, PutCommand, DeleteCommand, QueryCommand, UpdateCommand, ScanCommand,
+    DynamoDBDocumentClient, GetCommand, PutCommand, DeleteCommand, QueryCommand, UpdateCommand, ScanCommand,
   } = require('@aws-sdk/lib-dynamodb');
 const { CloudFrontClient, CreateInvalidationCommand } = require("@aws-sdk/client-cloudfront");
 const { Magic } = require('@magic-sdk/admin');
 const mAdmin = new Magic(process.env.MAGIC);
 
-const routeDBClient = new DynamoDBClient();
-const routeDB = DynamoDBDocument.from(routeDBClient);
+const routeDBClient = new DynamoDBClient({});
+const routeDB = DynamoDBDocumentClient.from(routeDBClient);
 
 const cloudFront = new CloudFrontClient();
 

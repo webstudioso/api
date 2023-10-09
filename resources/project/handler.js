@@ -1,13 +1,13 @@
 const { DynamoDBClient } = require('@aws-sdk/client-dynamodb');
 const {
-    DynamoDBDocument, GetCommand, PutCommand, DeleteCommand, QueryCommand, UpdateCommand, ScanCommand,
+    DynamoDBDocumentClient , GetCommand, PutCommand, DeleteCommand, QueryCommand, UpdateCommand, ScanCommand,
   } = require('@aws-sdk/lib-dynamodb');
 const { Magic } = require('@magic-sdk/admin');
 const { gzipSync, gunzipSync } = require('zlib');
 const mAdmin = new Magic(process.env.MAGIC);
 
-const projectDBClient = new DynamoDBClient();
-const projectDB = DynamoDBDocument.from(projectDBClient);
+const projectDBClient = new DynamoDBClient({});
+const projectDB = DynamoDBDocumentClient.from(projectDBClient);
 
 exports.main = async (event, context) => {
     const TABLE= 'Projects'
