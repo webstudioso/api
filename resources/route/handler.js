@@ -62,8 +62,7 @@ exports.main = async (event, context) => {
                         Key: {
                             i: event.pathParameters.id
                         }
-                    }))
-                    .promise();
+                    }));
                 body = data?.Item ? {
                     id: data.Item.i,
                     cid: data.Item.c,
@@ -85,8 +84,7 @@ exports.main = async (event, context) => {
                             ":o": getIssuer(event),
                             ":t": Date.now()
                         }
-                    }))
-                    .promise();
+                    }));
                 body = `Post item ${requestJSON.id}`;
                 invalidateCache()
                 break;
@@ -101,8 +99,7 @@ exports.main = async (event, context) => {
                         ExpressionAttributeValues: {
                             ":o": getIssuer(event)
                         }
-                    }))
-                    .promise();
+                    }));
                 body = `Deleted item ${event.pathParameters.id}`;
                 invalidateCache()
                 break;

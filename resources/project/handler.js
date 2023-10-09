@@ -42,8 +42,7 @@ exports.main = async (event, context) => {
                         ExpressionAttributeValues: {
                             ":o": issuer
                         }
-                    }))
-                    .promise();
+                    }));
                 body = response?.Items?.map((item) => {
                     return {
                         id: item.i,
@@ -68,8 +67,7 @@ exports.main = async (event, context) => {
                         ExpressionAttributeValues: {
                             ":o": issuer
                         }
-                    }))
-                    .promise();
+                    }));
                 body = item?.Item ? {
                     id: item.Item.i,
                     subdomain: item.Item.s,
@@ -100,8 +98,7 @@ exports.main = async (event, context) => {
                             ":m": bodyJSON.metadata,
                             ":o": issuer
                         }
-                    }))
-                    .promise();
+                    }));
                 body = `Update item ${event.pathParameters.id}`;
                 break;
             case "DELETE /project/{id}":
@@ -115,8 +112,7 @@ exports.main = async (event, context) => {
                         ExpressionAttributeValues: {
                             ":o": issuer
                         }
-                    }))
-                    .promise();
+                    }));
                 body = `Deleted item ${event.pathParameters.id}`;
                 break;
 
@@ -131,8 +127,7 @@ exports.main = async (event, context) => {
                         ExpressionAttributeValues: {
                             ":o": issuer
                         }
-                    }))
-                    .promise();
+                    }));
 
                 if (data?.Item?.c) {
                     // Content exist for this project, we try to decompress
@@ -169,8 +164,7 @@ exports.main = async (event, context) => {
                             ":c": compressed,
                             ":o": issuer
                         }
-                    }))
-                    .promise();
+                    }));
                 body = `Updated project content ${event.pathParameters.id}`;
                 break;
             case "DELETE /project/{id}/content":
@@ -186,8 +180,7 @@ exports.main = async (event, context) => {
                             ":c": null,
                             ":o": issuer
                         }
-                    }))
-                    .promise();
+                    }));
                 body = `Deleted project content ${event.pathParameters.id}`;
                 break;
             case "POST /project/{id}/metadata":
@@ -204,8 +197,7 @@ exports.main = async (event, context) => {
                                 ":m": metaJSON,
                                 ":o": issuer
                             }
-                        }))
-                        .promise();
+                        }));
                     body = `Updated project metadata ${event.pathParameters.id}`;
                     break;
             default:
