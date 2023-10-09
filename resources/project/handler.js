@@ -1,9 +1,9 @@
-const AWS = require("aws-sdk");
+const { DynamoDBClient } = require('@aws-sdk/client-dynamodb');
 const { Magic } = require('@magic-sdk/admin');
 const { gzipSync, gunzipSync } = require('zlib');
 const mAdmin = new Magic(process.env.MAGIC);
 
-const projectDB = new AWS.DynamoDB.DocumentClient();
+const projectDB = new DynamoDBClient();
 
 exports.main = async (event, context) => {
     const TABLE= 'Projects'

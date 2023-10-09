@@ -1,9 +1,10 @@
-const AWS = require("aws-sdk");
+const { DynamoDBClient } = require('@aws-sdk/client-dynamodb');
+const { CloudFrontClient } = require("@aws-sdk/client-cloudfront");
 const { Magic } = require('@magic-sdk/admin');
 const mAdmin = new Magic(process.env.MAGIC);
 
-const routeDB = new AWS.DynamoDB.DocumentClient();
-const cloudFront = new AWS.CloudFront();
+const routeDB = new DynamoDBClient();
+const cloudFront = new CloudFrontClient();
 
 const cloudfrontInvalidationParams = {
     DistributionId: process.env.AWS_CF_DISTRIBUTION_ID,
