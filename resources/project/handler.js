@@ -1,9 +1,10 @@
 const { DynamoDBClient } = require('@aws-sdk/client-dynamodb');
 const {
-    DynamoDBDocumentClient , GetCommand, PutCommand, DeleteCommand, QueryCommand, UpdateCommand, ScanCommand,
+    DynamoDBDocumentClient , GetCommand, DeleteCommand, QueryCommand, UpdateCommand,
   } = require('@aws-sdk/lib-dynamodb');
 const { Magic } = require('@magic-sdk/admin');
 const { gzipSync, gunzipSync } = require('zlib');
+const { getDIDTokenFromEvent } = require('../utils/auth');
 const mAdmin = new Magic(process.env.MAGIC);
 
 const projectDBClient = new DynamoDBClient({});
@@ -26,7 +27,7 @@ exports.main = async (event, context) => {
     let route = httpMethod.concat(' ').concat(path);
 
     // Get issuer
-    const DIDToken = event.headers.authorizetoken.substring(7);
+    const DIDToken = getDIDTokenFromEvent(event);
     const issuer = mAdmin.token.getIssuer(DIDToken);
     console.log(`User ${issuer}`);
 
