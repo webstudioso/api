@@ -4,7 +4,7 @@ const {
   } = require('@aws-sdk/lib-dynamodb');
 const { CloudFrontClient, CreateInvalidationCommand } = require("@aws-sdk/client-cloudfront");
 const { Magic } = require('@magic-sdk/admin');
-const { getDIDTokenFromAuthToken } = require('../utils/auth');
+const { getDIDTokenFromEvent } = require('../utils/auth');
 const mAdmin = new Magic(process.env.MAGIC);
 
 const routeDBClient = new DynamoDBClient({});
@@ -25,7 +25,7 @@ const cloudfrontInvalidationParams = {
 
 const getIssuer = (event) => {
     // Get issuer
-    const DIDToken = getDIDTokenFromAuthToken(event.headers.authorizetoken);
+    const DIDToken = getDIDTokenFromEvent(event);
     const issuer = mAdmin.token.getIssuer(DIDToken);
     console.log(`User ${issuer} request received`);
     return issuer;    

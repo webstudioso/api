@@ -1,11 +1,11 @@
 const { Magic } = require('@magic-sdk/admin');
-const { getDIDTokenFromAuthToken } = require('../utils/auth');
+const { getDIDTokenFromEvent } = require('../utils/auth');
 const mAdmin = new Magic(process.env.MAGIC);
 
 exports.main = async (event, context) => {
 
     let policyAccess = 'Deny';
-    const DIDToken = getDIDTokenFromAuthToken(event?.authorizationToken);
+    const DIDToken = getDIDTokenFromEvent(event);
     try {
       mAdmin.token.validate(DIDToken);
       policyAccess = 'Allow';
