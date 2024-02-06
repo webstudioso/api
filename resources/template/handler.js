@@ -35,7 +35,13 @@ exports.main = async (event, context) => {
         switch (route) {
 
             case "GET /template":
-                const response = await db.send(new ScanCommand({ TableName: TABLE }));
+                const response = await db.send(new ScanCommand({ 
+                    TableName: TABLE,
+                    FilterExpression : "s = :s",
+                    ExpressionAttributeValues: {
+                        ':s': 'published'
+                    },
+                }));
                 body = response?.Items?.map((item) => {
                     return {
                         id: item.i,
@@ -69,7 +75,7 @@ exports.main = async (event, context) => {
                         Key: {
                             i: event.pathParameters.id
                         },
-                        UpdateExpression: "set p = :p, n = :n, d = :d, t = :t, c = :c, o = :o, x =:x",
+                        UpdateExpression: "set p = :p, n = :n, d = :d, t = :t, c = :c, o = :o, x = :x, s = :s",
                         ConditionExpression: "attribute_not_exists(i) OR o = :o",
                         ExpressionAttributeValues: {
                             ":p": bodyJSON.preview,
@@ -78,7 +84,8 @@ exports.main = async (event, context) => {
                             ":x": bodyJSON.tags,
                             ":c": gzipSync(bodyJSON.content),
                             ":o": issuer,
-                            ":t": Date.now()
+                            ":t": Date.now(),
+                            ":s": "review"
                         }
                     }));
                 body = `Update item ${event.pathParameters.id}`;
