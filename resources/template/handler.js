@@ -69,13 +69,14 @@ exports.main = async (event, context) => {
                 break;
             case "POST /template/{id}":
                 let bodyJSON = JSON.parse(event.body);
+                const userMetadata = await mAdmin.users.getMetadataByIssuer(issuer)
                 await db
                     .send(new UpdateCommand({
                         TableName: TABLE,
                         Key: {
                             i: event.pathParameters.id
                         },
-                        UpdateExpression: "set p = :p, n = :n, d = :d, t = :t, c = :c, o = :o, x = :x, s = :s",
+                        UpdateExpression: "set p = :p, n = :n, d = :d, t = :t, c = :c, o = :o, x = :x, s = :s, e = :e",
                         ConditionExpression: "attribute_not_exists(i) OR o = :o",
                         ExpressionAttributeValues: {
                             ":p": bodyJSON.preview,
@@ -85,7 +86,8 @@ exports.main = async (event, context) => {
                             ":c": gzipSync(bodyJSON.content),
                             ":o": issuer,
                             ":t": Date.now(),
-                            ":s": "review"
+                            ":s": "review",
+                            ":e": userMetadata?.email
                         }
                     }));
                 body = `Update item ${event.pathParameters.id}`;

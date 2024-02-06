@@ -82,13 +82,14 @@ exports.main = async (event, context) => {
                 break;
             case "POST /project/{id}":
                 let bodyJSON = JSON.parse(event.body);
+                const userMetadata = await mAdmin.users.getMetadataByIssuer(issuer)
                 await projectDB
                     .send(new UpdateCommand({
                         TableName: TABLE,
                         Key: {
                             i: event.pathParameters.id
                         },
-                        UpdateExpression: "set s = :s, d = :d, p = :p, n = :n, o = :o, u =:u, m =:m",
+                        UpdateExpression: "set s = :s, d = :d, p = :p, n = :n, o = :o, u =:u, m = :m, e = :e",
                         ConditionExpression: "attribute_not_exists(i) OR o = :o",
                         ExpressionAttributeValues: {
                             ":s": bodyJSON.subdomain,
@@ -97,7 +98,8 @@ exports.main = async (event, context) => {
                             ":n": bodyJSON.name,
                             ":u": bodyJSON.collaborators,
                             ":m": bodyJSON.metadata,
-                            ":o": issuer
+                            ":o": issuer,
+                            ":e": userMetadata?.email
                         }
                     }));
                 body = `Update item ${event.pathParameters.id}`;
