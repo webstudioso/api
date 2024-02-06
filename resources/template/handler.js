@@ -63,7 +63,7 @@ exports.main = async (event, context) => {
                 break;
             case "POST /template/{id}":
                 let bodyJSON = JSON.parse(event.body);
-                await projectDB
+                await db
                     .send(new UpdateCommand({
                         TableName: TABLE,
                         Key: {
