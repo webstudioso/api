@@ -69,7 +69,7 @@ exports.main = async (event, context) => {
                         Key: {
                             i: event.pathParameters.id
                         },
-                        UpdateExpression: "set p = :p, n = :n, d = :d, t = :t, c = :c, o = :o, u =:u",
+                        UpdateExpression: "set p = :p, n = :n, d = :d, t = :t, c = :c, o = :o, x =:x",
                         ConditionExpression: "attribute_not_exists(i) OR o = :o",
                         ExpressionAttributeValues: {
                             ":p": bodyJSON.preview,
