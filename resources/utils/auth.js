@@ -12,7 +12,8 @@ exports.getDIDTokenFromEvent = (event) => {
     const headers = event?.headers;
     const token =   event?.authorizationToken || 
                     headers?.authorizetoken || 
-                    headers?.AuthorizeToken;
+                    headers?.AuthorizeToken || 
+                    headers?.Authorizetoken;
     const parsedToken = token?.substring(7);
     if (parsedToken && parsedToken.length > 0) {
         console.log(`[getDIDTokenFromAuthToken] parsed result ${parsedToken} from token ${token}`)
