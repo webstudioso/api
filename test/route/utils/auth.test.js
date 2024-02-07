@@ -54,6 +54,16 @@ describe('Auth Utils', () => {
         expect(DIDToken).toBe('abc=');
     });
 
+    it('Parses string by removing BEARER suffix from event.headers.Authorizetoken', () => {
+        const event = {
+            headers: {
+                Authorizetoken: 'Bearer abc='
+            }
+        }
+        const DIDToken = getDIDTokenFromEvent(event);
+        expect(DIDToken).toBe('abc=');
+    });
+
     it('Returns empty if wrong length from event.headers.AuhtorizeToken', () => {
         const event = {
             headers: {
