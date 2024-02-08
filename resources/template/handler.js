@@ -38,11 +38,11 @@ exports.main = async (event, context) => {
                 const params = event?.queryStringParameters
                 const expressions = []
                 // Supported query params
-                const status = params.status
+                const status = params?.status
                 if (status) expressions.push('s = :s')
-                const author = params.author
+                const author = params?.author
                 if (author) expressions.push('o = :o')
-                const isPrivate = params.private
+                const isPrivate = params?.private
                 if (isPrivate) expressions.push('v = :v')
 
                 const response = await db.send(new ScanCommand({ 
