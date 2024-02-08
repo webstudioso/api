@@ -44,6 +44,15 @@ exports.main = async (event, context) => {
                 if (author) expressions.push('o = :o')
                 const isPrivate = params?.private
                 if (isPrivate) expressions.push('v = :v')
+                
+                const filterExpression = expressions?.join(' and ')
+                const filterValues = {
+                    ...(status && {':s': status}),
+                    ...(isPrivate && {':v': isPrivate}),
+                    ...(author && {':o': author}),
+                }
+
+                console.log(`Request to retrive templates with status:${status}, author:${author} and private=${isPrivate} creating filterExpresion:${filterExpression} and filterValues:${JSON.stringify(filterValues)}`);
 
                 const response = await db.send(new ScanCommand({ 
                     TableName: TABLE,
@@ -51,11 +60,7 @@ exports.main = async (event, context) => {
                         FilterExpression : expressions.join(' and ')
                     }),
                     ...( expressions && { 
-                        ExpressionAttributeValues: {
-                            ...(status && {':s': status}),
-                            ...(isPrivate && {':v': isPrivate}),
-                            ...(author && {':o': author}),
-                        }
+                        ExpressionAttributeValues: filterValues
                     }),
                 }));
                 body = response?.Items?.map((item) => {
