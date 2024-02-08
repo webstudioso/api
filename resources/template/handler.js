@@ -35,12 +35,28 @@ exports.main = async (event, context) => {
         switch (route) {
 
             case "GET /template":
+                const params = event?.queryStringParameters
+                const expressions = []
+                // Supported query params
+                const status = params.status
+                if (status) expressions.push('s = :s')
+                const author = params.author
+                if (author) expressions.push('o = :o')
+                const isPrivate = params.private
+                if (isPrivate) expressions.push('v = :v')
+
                 const response = await db.send(new ScanCommand({ 
                     TableName: TABLE,
-                    FilterExpression : "s = :s",
-                    ExpressionAttributeValues: {
-                        ':s': 'published'
-                    },
+                    ...( expressions && { 
+                        FilterExpression : expressions.join(' and ')
+                    }),
+                    ...( expressions && { 
+                        ExpressionAttributeValues: {
+                            ...(status && {':s': status}),
+                            ...(isPrivate && {':v': isPrivate}),
+                            ...(author && {':o': author}),
+                        }
+                    }),
                 }));
                 body = response?.Items?.map((item) => {
                     return {
@@ -50,7 +66,10 @@ exports.main = async (event, context) => {
                         description: item.d,
                         tags: item.x,
                         owner: item.o,
-                        updated: item.t
+                        updated: item.t,
+                        isPrivate: item.v,
+                        demo: item.l,
+                        documentation: item.m
                     }
                 });
                 break;
@@ -64,6 +83,9 @@ exports.main = async (event, context) => {
                     tags: item.Item.x,
                     owner: item.Item.o,
                     updated: item.Item.t,
+                    isPrivate: item.Item.v,
+                    demo: item.Item.l,
+                    documentation: item.Item.m,
                     content: gunzipSync(item.Item.c).toString()
                 } : { };
                 break;
@@ -76,7 +98,7 @@ exports.main = async (event, context) => {
                         Key: {
                             i: event.pathParameters.id
                         },
-                        UpdateExpression: "set p = :p, n = :n, d = :d, t = :t, c = :c, o = :o, x = :x, s = :s, e = :e",
+                        UpdateExpression: "set p = :p, n = :n, d = :d, t = :t, c = :c, o = :o, x = :x, s = :s, e = :e, v = :v, l = :l, m = :m",
                         ConditionExpression: "attribute_not_exists(i) OR o = :o",
                         ExpressionAttributeValues: {
                             ":p": bodyJSON.preview,
@@ -87,7 +109,10 @@ exports.main = async (event, context) => {
                             ":o": issuer,
                             ":t": Date.now(),
                             ":s": "review",
-                            ":e": userMetadata?.email
+                            ":e": userMetadata?.email,
+                            ":v": bodyJSON.isPrivate,
+                            ":l": bodyJSON.demo,
+                            ":m": bodyJSON.documentation
                         }
                     }));
                 body = `Update item ${event.pathParameters.id}`;
