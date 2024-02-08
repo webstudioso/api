@@ -56,10 +56,10 @@ exports.main = async (event, context) => {
 
                 const response = await db.send(new ScanCommand({ 
                     TableName: TABLE,
-                    ...( expressions && { 
-                        FilterExpression : expressions.join(' and ')
+                    ...( filterExpression && { 
+                        FilterExpression : filterExpression
                     }),
-                    ...( expressions && { 
+                    ...( filterValues && { 
                         ExpressionAttributeValues: filterValues
                     }),
                 }));
