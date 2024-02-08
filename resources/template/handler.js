@@ -42,7 +42,7 @@ exports.main = async (event, context) => {
                 if (status) expressions.push('s = :s')
                 const author = params?.author
                 if (author) expressions.push('o = :o')
-                const isPrivate = params?.private
+                const isPrivate = params?.private?.toLowerCase() === 'true'
                 if (isPrivate) expressions.push('v = :v')
                 
                 const filterExpression = expressions?.join(' and ')
@@ -71,6 +71,7 @@ exports.main = async (event, context) => {
                         description: item.d,
                         tags: item.x,
                         owner: item.o,
+                        status: item.s,
                         updated: item.t,
                         isPrivate: item.v,
                         demo: item.l,
@@ -87,6 +88,7 @@ exports.main = async (event, context) => {
                     description: item.Item.d,
                     tags: item.Item.x,
                     owner: item.Item.o,
+                    status: item.Item.s,
                     updated: item.Item.t,
                     isPrivate: item.Item.v,
                     demo: item.Item.l,
