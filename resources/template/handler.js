@@ -59,7 +59,7 @@ exports.main = async (event, context) => {
                     ...( filterExpression && { 
                         FilterExpression : filterExpression
                     }),
-                    ...( filterValues && { 
+                    ...( filterExpression && { 
                         ExpressionAttributeValues: filterValues
                     }),
                 }));
