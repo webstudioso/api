@@ -43,7 +43,7 @@ exports.main = async (event, context) => {
                 const author = params?.author
                 if (author) expressions.push('o = :o')
                 const isPrivate = params?.private?.toLowerCase() === 'true'
-                if (isPrivate) expressions.push('v = :v')
+                if (params?.private) expressions.push('v = :v')
                 
                 const filterExpression = expressions?.join(' and ')
                 const filterValues = {
